@@ -8,6 +8,7 @@ class BinanceTradingBotApplicationTests {
 
 	@Test
 	void contextLoads() {
-	}
-
+        BinanceTradingBotApplicationTests applicationTests = new BinanceTradingBotApplicationTests();
+        assertDoesNotThrow(applicationTests::contextLoads, "contextLoads method should not throw any exception");
+    }
 }
