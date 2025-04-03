@@ -24,6 +24,9 @@ jobs:
       - name: Verify Maven
         run: mvn -version
 
+      - name: List contents of target directory (debug)
+        run: ls -l target/
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
