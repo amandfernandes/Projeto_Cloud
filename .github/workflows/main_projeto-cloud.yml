@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Verify Maven
-        run: mvn -version
+        run: mvn clean package
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
