@@ -59,4 +59,4 @@ jobs:
         with:
           app-name: 'projeto-cloud'
           slot-name: 'Production'
-          package: '*.jar'
+          package: 'java-app/*.jar'
