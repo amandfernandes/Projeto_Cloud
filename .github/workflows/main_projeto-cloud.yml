@@ -24,25 +24,43 @@ jobs:
       - name: Verify Maven
         run: mvn -version
 
+      - name: Check project structure
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files in current directory:"
+          ls -la
+          echo "Checking for pom.xml:"
+          if [ -f "pom.xml" ]; then
+            echo "pom.xml found"
+          else
+            echo "pom.xml not found in current directory!"
+            find . -name "pom.xml" -type f
+          fi
+
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Find JAR files
-        id: find-jar
+      - name: Check target directory
         run: |
-          echo "Found JAR files:"
-          find . -name "*.jar" -type f
-          # Set the JAR path as an output variable
-          echo "jar_path=$(find . -name "*.jar" -type f | head -n 1)" >> $GITHUB_OUTPUT
-
-      - name: Display JAR path
-        run: echo "Will upload JAR from ${{ steps.find-jar.outputs.jar_path }}"
+          echo "Files in current directory after build:"
+          ls -la
+          echo "Checking target directory:"
+          if [ -d "target" ]; then
+            echo "target directory exists"
+            echo "Contents of target directory:"
+            ls -la target/
+          else
+            echo "target directory not found!"
+            echo "Looking for any JAR files in project:"
+            find . -name "*.jar" -type f
+          fi
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: ${{ steps.find-jar.outputs.jar_path }}
+          path: target/*.jar
           if-no-files-found: error
 
   deploy:
@@ -62,7 +80,9 @@ jobs:
           name: java-app
 
       - name: List downloaded files
-        run: ls -la
+        run: |
+          echo "Current directory contents:"
+          ls -la
         
       - name: Login to Azure
         uses: azure/login@v2
