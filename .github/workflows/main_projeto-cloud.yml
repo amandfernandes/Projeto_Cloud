@@ -121,6 +121,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'projeto-cloud'
+          app-name: 'projeto-cloud-ibmec'
           slot-name: 'Production'
           package: '*.jar'
