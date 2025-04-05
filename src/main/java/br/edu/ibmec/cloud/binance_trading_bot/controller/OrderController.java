@@ -1,30 +1,18 @@
 package br.edu.ibmec.cloud.binance_trading_bot.controller;
-
-
 import br.edu.ibmec.cloud.binance_trading_bot.model.User;
 import br.edu.ibmec.cloud.binance_trading_bot.model.UserOrderReport;
 import br.edu.ibmec.cloud.binance_trading_bot.repository.UserOrderReportRepository;
 import br.edu.ibmec.cloud.binance_trading_bot.repository.UserRepository;
 import br.edu.ibmec.cloud.binance_trading_bot.request.OrderRequest;
 import br.edu.ibmec.cloud.binance_trading_bot.response.OrderResponse;
-import br.edu.ibmec.cloud.binance_trading_bot.response.TickerResponse;
 import br.edu.ibmec.cloud.binance_trading_bot.service.BinanceIntegration;
-import com.binance.connector.client.SpotClient;
-import com.binance.connector.client.exceptions.BinanceClientException;
-import com.binance.connector.client.exceptions.BinanceConnectorException;
-import com.binance.connector.client.impl.SpotClientImpl;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController

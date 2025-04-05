@@ -1,5 +1,4 @@
 package br.edu.ibmec.cloud.binance_trading_bot.model;
-
 import lombok.Data;
 import jakarta.persistence.*;
 

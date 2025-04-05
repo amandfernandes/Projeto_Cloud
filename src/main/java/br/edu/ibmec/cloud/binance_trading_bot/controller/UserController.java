@@ -1,6 +1,4 @@
 package br.edu.ibmec.cloud.binance_trading_bot.controller;
-
-
 import br.edu.ibmec.cloud.binance_trading_bot.model.User;
 import br.edu.ibmec.cloud.binance_trading_bot.model.UserConfiguration;
 import br.edu.ibmec.cloud.binance_trading_bot.model.UserTrackingTicker;
@@ -11,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Optional;
 
 @RestController

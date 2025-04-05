@@ -1,9 +1,6 @@
 package br.edu.ibmec.cloud.binance_trading_bot.model;
-
-
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.List;
 
 @Data
