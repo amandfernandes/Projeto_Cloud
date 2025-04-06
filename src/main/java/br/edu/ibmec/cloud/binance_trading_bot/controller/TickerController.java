@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("{id}/tickers")
@@ -30,37 +31,56 @@ public class TickerController {
 
     @GetMapping
     public ResponseEntity<List<TickerResponse>> getTickers(@PathVariable("id") int id) {
-        Optional<User> optUser = this.repository.findById(id);
-
-        if (optUser.isEmpty())
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-
-        //Pego os dados do usuario no banco
-        User user = optUser.get();
-
-        //Obtendo as moedas cadastradas para consulta
-        ArrayList<String> tickers = new ArrayList<>();
-
-        for (UserTrackingTicker item: user.getTrackingTickers()) {
-            tickers.add(item.getSymbol());
+        // Busca e valida o usuário
+        User user = getUserById(id);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        //Configurando a chave de acesso para binance
-        this.binanceIntegration.setAPI_KEY(user.getBinanceApiKey());
-        this.binanceIntegration.setSECRET_KEY(user.getBinanceSecretKey());
-
-        //Obtendo o ultimo preços das moedas cadastradas para o usuario
-        String result = this.binanceIntegration.getTickers(tickers);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
-            List<TickerResponse> response = objectMapper.readValue(result,
-                                                new TypeReference<List<TickerResponse>>() {});
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            // Configura a integração com a Binance
+            configureBinanceIntegration(user);
+            
+            // Obtém os tickers do usuário
+            List<String> userTickers = extractUserTickers(user);
+            
+            // Busca as informações dos tickers na Binance
+            return processTickerInformation(userTickers);
+            
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private User getUserById(int id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    private void configureBinanceIntegration(User user) {
+        binanceIntegration.setAPI_KEY(user.getBinanceApiKey());
+        binanceIntegration.setSECRET_KEY(user.getBinanceSecretKey());
+    }
+
+    private List<String> extractUserTickers(User user) {
+        return user.getTrackingTickers()
+            .stream()
+            .map(UserTrackingTicker::getSymbol)
+            .collect(Collectors.toList());
+    }
+
+    private ResponseEntity<List<TickerResponse>> processTickerInformation(List<String> tickers) throws Exception {
+        String binanceResponse = binanceIntegration.getTickers(tickers);
+        List<TickerResponse> tickerResponses = parseTickerResponse(binanceResponse);
+        return new ResponseEntity<>(tickerResponses, HttpStatus.OK);
+    }
+
+    private List<TickerResponse> parseTickerResponse(String binanceResponse) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper.readValue(
+            binanceResponse,
+            new TypeReference<List<TickerResponse>>() {}
+        );
     }
 
 }
