@@ -124,4 +124,42 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    @DeleteMapping("{userId}/configuration/{configId}")
+    public ResponseEntity<User> removeConfiguration(
+            @PathVariable("userId") Integer userId,
+            @PathVariable("configId") Integer configId) {
+        
+        // Busca o usuário
+        Optional<User> optionalUser = this.userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        User user = optionalUser.get();
+
+        // Busca a configuração
+        Optional<UserConfiguration> optionalConfig = this.userConfigurationRepository.findById(configId);
+        if (optionalConfig.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        UserConfiguration configToRemove = optionalConfig.get();
+
+        // Verifica se a configuração pertence ao usuário
+        boolean configBelongsToUser = user.getConfigurations()
+            .stream()
+            .anyMatch(config -> config.getId().equals(configId));
+
+        if (!configBelongsToUser) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        // Remove a configuração da lista do usuário
+        user.getConfigurations().removeIf(config -> config.getId().equals(configId));
+        userRepository.save(user);
+
+        // Remove a configuração do banco de dados
+        userConfigurationRepository.delete(configToRemove);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
 }
