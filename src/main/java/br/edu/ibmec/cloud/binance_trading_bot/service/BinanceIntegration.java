@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -17,10 +18,10 @@ public class BinanceIntegration {
     private String API_KEY;
     private String SECRET_KEY;
 
-    public String getTickers(ArrayList<String> symbols) {
+    public String getTickers(List<String> tickers) {
         SpotClient client = new SpotClientImpl(this.API_KEY, this.SECRET_KEY, this.BASE_URL);
         Map<String, Object> parameters = new LinkedHashMap<>();
-        parameters.put("symbols", symbols);
+        parameters.put("symbols", tickers);
         String result = client.createMarket().ticker(parameters);
         return result;
     }
