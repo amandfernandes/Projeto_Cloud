@@ -65,16 +65,25 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        //Cria a configuração na base de dados
+        User user = optionalUser.get();
+
+        // Verifica se já existe um ticker com o mesmo símbolo para este usuário
+        boolean symbolExists = user.getTrackingTickers()
+            .stream()
+            .anyMatch(existingTicker -> existingTicker.getSymbol().equals(ticker.getSymbol()));
+
+        if (symbolExists) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+
+        // Cria a configuração na base de dados
         this.userTrackingTickerRepository.save(ticker);
 
-        //Associa a configuração ao usuario
-        User user = optionalUser.get();
+        // Associa a configuração ao usuario
         user.getTrackingTickers().add(ticker);
         userRepository.save(user);
 
         return new ResponseEntity<>(user, HttpStatus.CREATED);
-
     }
 
     @DeleteMapping("{userId}/tracking-ticker/{tickerId}")
