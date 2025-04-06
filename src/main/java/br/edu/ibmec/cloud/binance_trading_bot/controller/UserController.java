@@ -77,4 +77,42 @@ public class UserController {
 
     }
 
+    @DeleteMapping("{userId}/tracking-ticker/{tickerId}")
+    public ResponseEntity<User> removeTicker(
+            @PathVariable("userId") Integer userId,
+            @PathVariable("tickerId") Integer tickerId) {
+        
+        // Busca o usuário
+        Optional<User> optionalUser = this.userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        User user = optionalUser.get();
+
+        // Busca o ticker
+        Optional<UserTrackingTicker> optionalTicker = this.userTrackingTickerRepository.findById(tickerId);
+        if (optionalTicker.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        UserTrackingTicker tickerToRemove = optionalTicker.get();
+
+        // Verifica se o ticker pertence ao usuário
+        boolean tickerBelongsToUser = user.getTrackingTickers()
+            .stream()
+            .anyMatch(ticker -> ticker.getId().equals(tickerId));
+
+        if (!tickerBelongsToUser) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        // Remove o ticker da lista do usuário
+        user.getTrackingTickers().removeIf(ticker -> ticker.getId().equals(tickerId));
+        userRepository.save(user);
+
+        // Remove o ticker do banco de dados
+        userTrackingTickerRepository.delete(tickerToRemove);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
 }
