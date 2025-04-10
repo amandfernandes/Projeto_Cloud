@@ -1,10 +1,10 @@
 # Projeto Cloud - IBMEC
 
 ## Equipe
-- Douglas
-- Amanda
-- Guilherme
-- Mateus
+- Douglas Silva
+- Amanda Fernandes
+- Guilherme Barros
+- Mateus Padilha
 
 ## Descrição do Projeto
 Este projeto tem como objetivo desenvolver uma aplicação de compra e venda de moedas, utilizando tecnologias de nuvem para garantir escalabilidade e eficiência. A aplicação inclui funcionalidades como APIs rodando na nuvem, banco de dados na nuvem, automação com Github Actions, e diversas regras de negócio.
