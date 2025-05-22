@@ -1,10 +1,9 @@
-name: Build and deploy JAR app to Azure Web App - projeto-cloud-ibmec
+name: Build and deploy Docker app to Azure Web App - projeto-cloud-ibmec
 
 on:
   push:
     branches:
       - main
-      - feature/*
   workflow_dispatch:
 
 jobs:
@@ -25,32 +24,38 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Find and verify JAR file
-        id: find-jar
+      - name: Verify JAR file
         run: |
-          echo "Looking for JAR files:"
-          find . -name "*.jar" -type f
+          echo "Checking target directory:"
+          ls -la target/
           JAR_FILE=$(find ./target -name "*.jar" -type f | grep -v original | head -n 1)
           if [ -n "$JAR_FILE" ]; then
             echo "Found JAR file: $JAR_FILE"
-            echo "jar_file=$JAR_FILE" >> $GITHUB_OUTPUT
-            # Verify it's a proper Spring Boot JAR
-            if [ -s "$JAR_FILE" ]; then
-              echo "JAR file size: $(stat -c%s "$JAR_FILE") bytes"
-            else
-              echo "WARNING: JAR file is empty!"
-            fi
+            echo "JAR file size: $(stat -c%s "$JAR_FILE") bytes"
           else
-            echo "ERROR: No JAR file found in target directory!"
+            echo "ERROR: No JAR file found!"
             exit 1
           fi
 
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
         with:
-          name: java-app
-          path: ${{ steps.find-jar.outputs.jar_file }}
-          retention-days: 1
+          login-server: ibmecdockerimage.azurecr.io
+          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          # Build the Docker image
+          docker build -t ibmec-trading-app:latest .
+          
+          # Tag for Azure Container Registry
+          docker tag ibmec-trading-app:latest ibmecdockerimage.azurecr.io/ibmec-trading:latest
+          
+          # Push to Azure Container Registry
+          docker push ibmecdockerimage.azurecr.io/ibmec-trading:latest
+          
+          echo "Docker image pushed successfully!"
 
   deploy:
     runs-on: ubuntu-latest
@@ -63,23 +68,6 @@ jobs:
       contents: read
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: java-app
-
-      - name: List downloaded files
-        run: |
-          echo "Downloaded files:"
-          ls -la
-          # Rename the JAR to app.jar for consistency
-          JAR_FILE=$(ls *.jar | head -n 1)
-          if [ -n "$JAR_FILE" ]; then
-            mv "$JAR_FILE" app.jar
-            echo "Renamed $JAR_FILE to app.jar"
-            echo "Final file size: $(stat -c%s app.jar) bytes"
-          fi
-
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -93,4 +81,4 @@ jobs:
         with:
           app-name: 'projeto-cloud-ibmec'
           slot-name: 'Production'
-          package: 'app.jar'
+          images: 'ibmecdockerimage.azurecr.io/ibmec-trading:latest'
