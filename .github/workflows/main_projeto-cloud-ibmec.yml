@@ -22,22 +22,36 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
       - name: Find and verify JAR file
         id: find-jar
         run: |
-            echo "Checking target directory:"
-            ls -la target/
-            JAR_FILE=$(find ./target -name "*.jar" -type f | grep -v original | head -n 1)
-            if [ -n "$JAR_FILE" ]; then
-              echo "Found JAR file: $JAR_FILE"
-              echo "JAR file size: $(stat -c%s "$JAR_FILE") bytes"
-            else
-              echo "ERROR: No JAR file found!""
-              exit 1
-            fi
+          echo "Checking target directory:"
+          ls -la target/
+          JAR_FILE=$(find ./target -name "*.jar" -type f | grep -v original | head -n 1)
+          if [ -n "$JAR_FILE" ]; then
+            echo "Found JAR file: $JAR_FILE"
+            echo "JAR file size: $(stat -c%s "$JAR_FILE") bytes"
+            echo "jar-file=$JAR_FILE" >> $GITHUB_OUTPUT
+          else
+            echo "ERROR: No JAR file found!"
+            exit 1
+          fi
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-app
+          path: ${{ steps.find-jar.outputs.jar-file }}
 
       - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
@@ -58,6 +72,7 @@ jobs:
           docker push ibmecdockerimage.azurecr.io/ibmec-trading:latest
           
           echo "Docker image pushed successfully!"
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
