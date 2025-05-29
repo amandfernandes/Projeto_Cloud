@@ -5,8 +5,8 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=admin
       - MYSQL_DATABASE=projeto-cloud
-      - MYSQL_USER=mateuscarestiato
-      - MYSQL_PASSWORD=@mateus123
+      - MYSQL_USER=USER_MYSQL
+      - MYSQL_PASSWORD=PASSWORD_MYSQL
     ports:
       - "3301:3306"
     volumes:
