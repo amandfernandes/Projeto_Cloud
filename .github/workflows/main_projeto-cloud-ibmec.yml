@@ -70,7 +70,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           # Build the Docker image
-          docker build -t ibmec-trading-app:latest .
+          docker build -t projeto_cloud-app:latest .
           
           # Tag for Azure Container Registry
           docker tag projeto_cloud-app ibmecdocker.azurecr.io/projeto_cloud-app:latest
