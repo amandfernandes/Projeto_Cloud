@@ -22,6 +22,13 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Install Docker Compose
+        run: |
+          DOCKER_COMPOSE_VERSION=2.20.2
+          sudo curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose version
+
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
@@ -56,9 +63,9 @@ jobs:
       - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
-          login-server: projetodockerimage.azurecr.io
-          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
-          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+          login-server: ibmecdocker.azurecr.io
+          username: ibmecdocker
+          password: 8tSjvzZ5kXWWYW6+U+y6S0Xv9yI8yAnvy59C8JosPo+ACRAR+b4D
 
       - name: Build and push Docker image
         run: |
@@ -66,9 +73,9 @@ jobs:
           docker build -t ibmec-trading-app:latest .
           
           # Tag for Azure Container Registry
-          docker tag ibmec-trading-app:latest projetodockerimage.azurecr.io/ibmec-trading:latest
+          docker tag projeto_cloud-app ibmecdocker.azurecr.io/projeto_cloud-app:latest
           
           # Push to Azure Container Registry
-          docker push projetodockerimage.azurecr.io/ibmec-trading:latest
-          
+          docker push ibmecdocker.azurecr.io/projeto_cloud-app:latest
+
           echo "Docker image pushed successfully!"
